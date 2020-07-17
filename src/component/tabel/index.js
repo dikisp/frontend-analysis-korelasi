@@ -11,6 +11,8 @@ import Paper from '@material-ui/core/Paper';
 import Button from '@material-ui/core/Button';
 import SyncIcon from '@material-ui/icons/Sync';
 
+import Modals from '../modal/index'
+
 
 
 
@@ -65,8 +67,10 @@ export default function CustomizedTables() {
         className={classes.button}
         startIcon={<SyncIcon />}
       >
-        Sinkron Data
+        <Modals />
       </Button>
+
+
       
     </div>
  
