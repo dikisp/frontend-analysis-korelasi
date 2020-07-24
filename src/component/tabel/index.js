@@ -196,7 +196,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function getSteps() {
-  return ["Ambil Data", "Pembersihan Data", "Hasil Analisis Korelasi"];
+  return ["Ambil Data", "Pembersihan Data", "Hasil Association Rule"];
 }
 
 function getStepContent(step) {
@@ -206,7 +206,7 @@ function getStepContent(step) {
     case 1:
       return "Pembersihan Data";
     case 2:
-      return "Hasil Analisis Korelasi";
+      return "Hasil Association Rule";
     default:
       return "Unknown step";
   }
@@ -295,9 +295,9 @@ export default function CustomizedTables() {
 
   const handleNext = () => {
     setActiveStep((prevActiveStep) => prevActiveStep + 1);
-    if (activeStep == 0) {
+    if (activeStep === 0) {
       handleGetCleanData();
-    }else if(activeStep == 1) {
+    }else if(activeStep === 1) {
       getkorelasi_()
     }
   };
@@ -305,9 +305,9 @@ export default function CustomizedTables() {
   const handleBack = () => {
     setActiveStep((prevActiveStep) => prevActiveStep - 1);
     console.log("akses konten : ", activeStep)
-    if (activeStep == 2) {
+    if (activeStep === 2) {
       handleGetCleanData();
-    }else if(activeStep == 1) {
+    }else if(activeStep === 1) {
       getUncleanData()
     }
   };
@@ -342,7 +342,7 @@ export default function CustomizedTables() {
 
 
   const tableCondition_ = () => {
-    if (activeStep == 1) {
+    if (activeStep === 1) {
       return (
         <Table className={classes.table} aria-label="customized table"> 
             <TableHead>
@@ -424,10 +424,12 @@ export default function CustomizedTables() {
     }
   }
 
-  return (
-    <div>
-      <div>
+  const sinkronData = () => {
+    if (activeStep === 0) {
+      return (
+        <div>
         <Button
+          onClick={() => getUncleanData()}
           variant="contained"
           color="primary"
           size="small"
@@ -437,6 +439,16 @@ export default function CustomizedTables() {
           Sinkron Data
         </Button>
       </div>
+      )
+    } else {
+      return null
+    }
+  }
+
+  return (
+    <div>
+
+      { sinkronData() }
 
       <div
         style={{ overflowY: "scroll", height: "500px", position: "relative" }}
