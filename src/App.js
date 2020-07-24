@@ -8,7 +8,8 @@ import Login from "./component/login/index";
 import SignUp from "./component/signup/index";
 
 function App() {
-  return (<Router>
+  return (
+  <Router>
     <div className="App">
       <nav className="navbar navbar-expand-lg navbar-light fixed-top">
         <div className="container">
