@@ -379,10 +379,10 @@ const CustomizedTables = ({ history }) => {
             <TableRow>
               <StyledTableCell>No</StyledTableCell>
               <StyledTableCell align="center">Antecedents</StyledTableCell>
-              <StyledTableCell align="center">Confidence</StyledTableCell>
               <StyledTableCell align="center">Consequents</StyledTableCell>
-              <StyledTableCell align="center">Lift</StyledTableCell>
               <StyledTableCell align="center">Support</StyledTableCell>
+              <StyledTableCell align="center">Confidence</StyledTableCell>
+              <StyledTableCell align="center">Lift</StyledTableCell>
             </TableRow>
           </TableHead>
 
@@ -393,14 +393,15 @@ const CustomizedTables = ({ history }) => {
                   {i + 1}
                 </StyledTableCell>
                 <StyledTableCell align="center">{row.antecedents}</StyledTableCell>
-                <StyledTableCell align="center">{row.confidence}</StyledTableCell>
                 <StyledTableCell align="center">{row.consequents}</StyledTableCell>
-                <StyledTableCell align="center">
-                  {row.lift}
-                </StyledTableCell>
                 <StyledTableCell align="center">
                   {row.support}
                 </StyledTableCell>
+                <StyledTableCell align="center">{row.confidence}</StyledTableCell>
+                <StyledTableCell align="center">
+                  {row.lift}
+                </StyledTableCell>
+                
               </StyledTableRow>
             ))}
           </TableBody>
