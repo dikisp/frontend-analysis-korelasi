@@ -512,7 +512,7 @@ const CustomizedTables = ({ history }) => {
     if (activeStep >= 3) {
       return  <TextField
       id="outlined-textarea"
-      label="Minimum Support"
+      label="Minimum Confidence"
       placeholder="Example : 0.3"
       multiline
       variant="outlined"
@@ -520,7 +520,7 @@ const CustomizedTables = ({ history }) => {
     } else if (activeStep === 2) {
       return <TextField
       id="outlined-textarea"
-      label="Minimum Confidence"
+      label="Minimum Support"
       placeholder="Example : 0.7"
       multiline
       variant="outlined"
