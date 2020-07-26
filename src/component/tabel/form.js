@@ -15,11 +15,6 @@ const useStyles = makeStyles((theme) => ({
 
 export default function MultilineTextFields() {
   const classes = useStyles();
-  const [value, setValue] = React.useState("Controlled");
-
-  const handleChange = (event) => {
-    setValue(event.target.value);
-  };
 
   return (
     <div style={{ display: "flex", justifyContent:'space-between', marginRight:'16px', marginTop:'16px' }}>

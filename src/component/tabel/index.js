@@ -22,14 +22,15 @@ import AssessmentIcon from "@material-ui/icons/Assessment";
 import SyncIcon from "@material-ui/icons/Sync";
 import ExitToApp from "@material-ui/icons/ExitToApp";
 import ListAltSharpIcon from "@material-ui/icons/ListAltSharp";
-
+import TextField from "@material-ui/core/TextField";
+  
 // import StepButton from '@material-ui/core/StepButton';
 import { withRouter } from "react-router-dom";
 
 import firebase from "../../config/firebase";
 
 // form
-import TextField from './form';
+// import TextField from './form';
 
 const useQontoStepIconStyles = makeStyles({
   root: {
@@ -202,6 +203,12 @@ const useStyles = makeStyles((theme) => ({
     marginTop: theme.spacing(1),
     marginBottom: theme.spacing(1),
   },
+  root: {
+    "& .MuiTextField-root": {
+      margin: theme.spacing(1),
+      width: "25ch",
+    },
+  },
 }));
 
 function getSteps() {
@@ -233,22 +240,6 @@ const CustomizedTables = ({ history }) => {
   const [dataHasilCleaning, setdataHasilCleaning] = useState([]);
 
   useEffect(() => {
-    // const rootref = firebase.database().ref();
-    // const userRef = rootref.child("users");
-    // var data_tidakbersih = [];
-    // userRef.once("value", (snap) => {
-    //   snap.forEach((row) => {
-    //     var array_key = Object.keys(row.val().log);
-    //     array_key.forEach(key => {
-    //       data_tidakbersih.push({
-    //         konten: row.val().log[key].Items_Log,
-    //         jumlah_akses_konten: row.val().log[key].Items_Interval,
-    //         durasi_konten: row.val().log[key].Date,
-    //       });
-    //     });
-    //   });
-    //   setdataHasilCleaning(data_tidakbersih);
-    // });
     console.log(activeStep);
     getUncleanData();
   }, []);
@@ -294,19 +285,37 @@ const CustomizedTables = ({ history }) => {
 
   const getkorelasi_ = () => {
     const rootref = firebase.database().ref();
-    const cleanRef = rootref.child("korelasi_data");
+    const cleanRef = rootref.child("itemset");
     var data_bersih = [];
     cleanRef.once("value", (snap) => {
       snap.forEach((row) => {
         data_bersih.push({
-          konten: row.val().konten_satu,
-          jumlah_akses_konten: row.val().konten_dua,
-          durasi_konten: row.val().korelasi,
+          konten: row.val().itemsets,
+          jumlah_akses_konten: row.val().length,
+          durasi_konten: row.val().support,
         });
       });
       setdataHasilCleaning(data_bersih);
     });
   };
+
+  const get_ar = () => {
+    const rootref = firebase.database().ref();
+    const cleanRef = rootref.child("ar");
+    var data_bersih = [];
+    cleanRef.once("value", (snap) => {
+      snap.forEach((row) => {
+        data_bersih.push({
+          antecedents: row.val().antecedents,
+          confidence: row.val().confidence,
+          consequents: row.val().consequents,
+          lift: row.val().lift,
+          support: row.val().support
+        });
+      });
+      setdataHasilCleaning(data_bersih);
+    });
+  }
 
   const handleNext = () => {
     setActiveStep((prevActiveStep) => prevActiveStep + 1);
@@ -314,28 +323,34 @@ const CustomizedTables = ({ history }) => {
       handleGetCleanData();
     } else if (activeStep === 1) {
       getkorelasi_();
+    } else if (activeStep === 2) {
+      get_ar();
+    } else if (activeStep === 4) {
+      get_ar();
     }
   };
 
   const handleBack = () => {
     setActiveStep((prevActiveStep) => prevActiveStep - 1);
-    console.log("akses konten : ", activeStep);
     if (activeStep === 2) {
       handleGetCleanData();
     } else if (activeStep === 1) {
       getUncleanData();
+    } else if (activeStep === 3) {
+      getkorelasi_()
     }
   };
 
   const handleReset = () => {
     setActiveStep(0);
+    getUncleanData();
   };
 
   const konten_ = () => {
     if (activeStep <= 1) {
       return "Konten";
     } else {
-      return "Konten Satu";
+      return "Item Set";
     }
   };
 
@@ -343,7 +358,7 @@ const CustomizedTables = ({ history }) => {
     if (activeStep <= 1) {
       return "Durasi Akses";
     } else {
-      return "Konten Dua";
+      return "length";
     }
   };
 
@@ -351,12 +366,47 @@ const CustomizedTables = ({ history }) => {
     if (activeStep <= 1) {
       return "Tanggal Akses";
     } else {
-      return "Korelasi";
+      return "Support";
     }
   };
 
   const tableCondition_ = () => {
-    if (activeStep === 1) {
+    console.log("activeStep at function tableCondition_ ", activeStep)
+    if (activeStep === 3 || activeStep ===4) {
+      return (
+        <Table className={classes.table} aria-label="customized table">
+          <TableHead>
+            <TableRow>
+              <StyledTableCell>No</StyledTableCell>
+              <StyledTableCell align="center">Antecedents</StyledTableCell>
+              <StyledTableCell align="center">Confidence</StyledTableCell>
+              <StyledTableCell align="center">Consequents</StyledTableCell>
+              <StyledTableCell align="center">Lift</StyledTableCell>
+              <StyledTableCell align="center">Support</StyledTableCell>
+            </TableRow>
+          </TableHead>
+
+          <TableBody>
+            {dataHasilCleaning.map((row, i) => (
+              <StyledTableRow key={i}>
+                <StyledTableCell component="th" scope="row">
+                  {i + 1}
+                </StyledTableCell>
+                <StyledTableCell align="center">{row.antecedents}</StyledTableCell>
+                <StyledTableCell align="center">{row.confidence}</StyledTableCell>
+                <StyledTableCell align="center">{row.consequents}</StyledTableCell>
+                <StyledTableCell align="center">
+                  {row.lift}
+                </StyledTableCell>
+                <StyledTableCell align="center">
+                  {row.support}
+                </StyledTableCell>
+              </StyledTableRow>
+            ))}
+          </TableBody>
+        </Table>
+      );
+    } else if (activeStep === 1) { 
       return (
         <Table className={classes.table} aria-label="customized table">
           <TableHead>
@@ -458,13 +508,53 @@ const CustomizedTables = ({ history }) => {
       });
   };
 
+  const minimumSupport = () => {
+    if (activeStep >= 3) {
+      return  <TextField
+      id="outlined-textarea"
+      label="Minimum Support"
+      placeholder="Example : 0.3"
+      multiline
+      variant="outlined"
+    />
+    } else if (activeStep === 2) {
+      return <TextField
+      id="outlined-textarea"
+      label="Minimum Confidence"
+      placeholder="Example : 0.7"
+      multiline
+      variant="outlined"
+    />
+    }
+  }
+
+  const buttonProcess = () => {
+    if (activeStep > 1) {
+      return (
+        <div style={{marginTop:'16px', height: '32px'}}>
+      <Button variant="contained" color="primary">
+        Proses
+      </Button>
+      </div>
+      )
+    }
+  }
+
   
   return (
     <div>
       {sinkronData()}
 
       <div style={{margin: "10px 5px 5px 5px" }}>
-      <TextField />
+      <div style={{ display: "flex", justifyContent:'space-between', marginRight:'16px', marginTop:'16px' }}>
+      <form className={classes.root} noValidate autoComplete="off" style={{marginLeft:'67%'}}>
+        <div>
+          {minimumSupport()}
+       
+        </div>
+      </form>
+      {buttonProcess()}
+    </div>
 
         <Button
           onClick={() => logout()}
