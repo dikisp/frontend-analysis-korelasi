@@ -5,12 +5,15 @@ import React from 'react';
 import Table from './component/tabel/index'
 import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
 
+import Asociation from './component/tabel/asociation'
+
 import Login from "./component/login/index";
 import PrivateRoute from './component/auth/PrivateRoute'
 import { AuthProvider } from './component/auth/Auth';
 
 function App() {
   return (
+    // <Asociation />
     <AuthProvider>
       <Router>
             <Switch>

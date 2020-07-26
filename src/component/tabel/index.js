@@ -28,6 +28,9 @@ import { withRouter } from "react-router-dom";
 
 import firebase from "../../config/firebase";
 
+// form
+import TextField from './form';
+
 const useQontoStepIconStyles = makeStyles({
   root: {
     // color: "#eaeaf0",
@@ -455,11 +458,14 @@ const CustomizedTables = ({ history }) => {
       });
   };
 
+  
   return (
     <div>
       {sinkronData()}
 
-      <div style={{ margin: "10px 5px 5px 5px" }}>
+      <div style={{margin: "10px 5px 5px 5px" }}>
+      <TextField />
+
         <Button
           onClick={() => logout()}
           variant="contained"
@@ -470,6 +476,7 @@ const CustomizedTables = ({ history }) => {
         >
           Logout
         </Button>
+
       </div>
 
       <div
@@ -520,7 +527,7 @@ const CustomizedTables = ({ history }) => {
                     onClick={handleBack}
                     className={classes.button}
                   >
-                    Back
+                    Kembali
                   </Button>
                   <Button
                     variant="contained"
@@ -528,7 +535,7 @@ const CustomizedTables = ({ history }) => {
                     onClick={handleNext}
                     className={classes.button}
                   >
-                    {activeStep === steps.length - 1 ? "Finish" : "Next"}
+                    {activeStep === steps.length - 1 ? "Finish" : "Lanjutkan"}
                   </Button>
                 </div>
               </div>
