@@ -20,13 +20,18 @@ import Typography from "@material-ui/core/Typography";
 import DeleteOutlineIcon from "@material-ui/icons/DeleteOutline";
 import AssessmentIcon from "@material-ui/icons/Assessment";
 import SyncIcon from "@material-ui/icons/Sync";
+import ExitToApp from "@material-ui/icons/ExitToApp";
+import ListAltSharpIcon from "@material-ui/icons/ListAltSharp";
+
 // import StepButton from '@material-ui/core/StepButton';
+import { withRouter } from "react-router-dom";
 
 import firebase from "../../config/firebase";
 
 const useQontoStepIconStyles = makeStyles({
   root: {
-    color: "#eaeaf0",
+    // color: "#eaeaf0",
+    color: "#fff000",
     display: "flex",
     height: 22,
     alignItems: "center",
@@ -131,7 +136,8 @@ function ColorlibStepIcon(props) {
   const icons = {
     1: <SyncIcon />,
     2: <DeleteOutlineIcon />,
-    3: <AssessmentIcon />,
+    3: <ListAltSharpIcon />,
+    4: <AssessmentIcon />,
   };
 
   return (
@@ -196,7 +202,12 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function getSteps() {
-  return ["Ambil Data", "Pembersihan Data", "Hasil Association Rule"];
+  return [
+    "Ambil Data",
+    "Pembersihan Data",
+    "Item Frequenset",
+    "Hasil Association Rule",
+  ];
 }
 
 function getStepContent(step) {
@@ -206,15 +217,16 @@ function getStepContent(step) {
     case 1:
       return "Pembersihan Data";
     case 2:
+      return "Item Frequenset";
+    case 3:
       return "Hasil Association Rule";
     default:
       return "Unknown step";
   }
 }
 
-export default function CustomizedTables() {
+const CustomizedTables = ({ history }) => {
   const classes = useStyles();
-
   const [dataHasilCleaning, setdataHasilCleaning] = useState([]);
 
   useEffect(() => {
@@ -235,7 +247,7 @@ export default function CustomizedTables() {
     //   setdataHasilCleaning(data_tidakbersih);
     // });
     console.log(activeStep);
-    getUncleanData()
+    getUncleanData();
   }, []);
 
   const [activeStep, setActiveStep] = React.useState(0);
@@ -247,16 +259,16 @@ export default function CustomizedTables() {
     var data_bersih = [];
     cleanRef.once("value", (snap) => {
       snap.forEach((row) => {
-          data_bersih.push({
-            konten: row.val().konten,
-            jumlah_akses_konten: row.val().tgl_akses,
-            durasi_konten: row.val().durasi_akses,
-            user_id: row.val().user_id
-          });
+        data_bersih.push({
+          konten: row.val().konten,
+          jumlah_akses_konten: row.val().tgl_akses,
+          durasi_konten: row.val().durasi_akses,
+          user_id: row.val().user_id,
+        });
       });
       setdataHasilCleaning(data_bersih);
     });
-  }
+  };
 
   const getUncleanData = () => {
     const rootref = firebase.database().ref();
@@ -265,7 +277,7 @@ export default function CustomizedTables() {
     userRef.once("value", (snap) => {
       snap.forEach((row) => {
         var array_key = Object.keys(row.val().log);
-        array_key.forEach(key => {
+        array_key.forEach((key) => {
           data_tidakbersih.push({
             konten: row.val().log[key].Items_Log,
             jumlah_akses_konten: row.val().log[key].Items_Interval,
@@ -275,7 +287,7 @@ export default function CustomizedTables() {
       });
       setdataHasilCleaning(data_tidakbersih);
     });
-  }
+  };
 
   const getkorelasi_ = () => {
     const rootref = firebase.database().ref();
@@ -283,32 +295,32 @@ export default function CustomizedTables() {
     var data_bersih = [];
     cleanRef.once("value", (snap) => {
       snap.forEach((row) => {
-          data_bersih.push({
-            konten: row.val().konten_satu,
-            jumlah_akses_konten: row.val().konten_dua,
-            durasi_konten: row.val().korelasi,
-          });
+        data_bersih.push({
+          konten: row.val().konten_satu,
+          jumlah_akses_konten: row.val().konten_dua,
+          durasi_konten: row.val().korelasi,
+        });
       });
       setdataHasilCleaning(data_bersih);
     });
-  }
+  };
 
   const handleNext = () => {
     setActiveStep((prevActiveStep) => prevActiveStep + 1);
     if (activeStep === 0) {
       handleGetCleanData();
-    }else if(activeStep === 1) {
-      getkorelasi_()
+    } else if (activeStep === 1) {
+      getkorelasi_();
     }
   };
 
   const handleBack = () => {
     setActiveStep((prevActiveStep) => prevActiveStep - 1);
-    console.log("akses konten : ", activeStep)
+    console.log("akses konten : ", activeStep);
     if (activeStep === 2) {
       handleGetCleanData();
-    }else if(activeStep === 1) {
-      getUncleanData()
+    } else if (activeStep === 1) {
+      getUncleanData();
     }
   };
 
@@ -318,144 +330,157 @@ export default function CustomizedTables() {
 
   const konten_ = () => {
     if (activeStep <= 1) {
-      return 'Konten'
-    }else {
-      return 'Konten Satu'
+      return "Konten";
+    } else {
+      return "Konten Satu";
     }
-  }
+  };
 
   const jumlahAksesKonten_ = () => {
     if (activeStep <= 1) {
-      return 'Jumlah Akses Konten'
-    }else {
-      return 'Konten Dua'
+      return "Durasi Akses";
+    } else {
+      return "Konten Dua";
     }
-  }
+  };
 
   const korelasi_ = () => {
     if (activeStep <= 1) {
-      return 'Durasi Akses Konten'
-    }else {
-      return 'Korelasi'
+      return "Tanggal Akses";
+    } else {
+      return "Korelasi";
     }
-  }
-
+  };
 
   const tableCondition_ = () => {
     if (activeStep === 1) {
       return (
-        <Table className={classes.table} aria-label="customized table"> 
-            <TableHead>
-              <TableRow>
-                <StyledTableCell>No</StyledTableCell>
-                <StyledTableCell align="center">
-                 User ID
-                </StyledTableCell>
-                <StyledTableCell align="center">
-                 Konten
-                </StyledTableCell>
-                <StyledTableCell align="center">
-                  Durasi Konten
-                </StyledTableCell>
-                <StyledTableCell align="center">
-                 Tgl Akses
-                </StyledTableCell>
-              </TableRow>
-            </TableHead>
+        <Table className={classes.table} aria-label="customized table">
+          <TableHead>
+            <TableRow>
+              <StyledTableCell>No</StyledTableCell>
+              <StyledTableCell align="center">User ID</StyledTableCell>
+              <StyledTableCell align="center">Konten</StyledTableCell>
+              <StyledTableCell align="center">Durasi Konten</StyledTableCell>
+              <StyledTableCell align="center">Tgl Akses</StyledTableCell>
+            </TableRow>
+          </TableHead>
 
-            <TableBody>
-              {dataHasilCleaning.map((row, i) => (
-                <StyledTableRow key={i}>
-                  <StyledTableCell component="th" scope="row">
-                    {i+1}
-                  </StyledTableCell>
-                  <StyledTableCell align="center">{row.user_id}</StyledTableCell>
-                  <StyledTableCell align="center">{row.konten}</StyledTableCell>
-                  <StyledTableCell align="center">
-                    {row.durasi_konten}
-                  </StyledTableCell>
-                  <StyledTableCell align="center">
-                    {row.jumlah_akses_konten}
-                  </StyledTableCell>
-                </StyledTableRow>
-              ))}
-            </TableBody>
-            
-          </Table>
-      )
+          <TableBody>
+            {dataHasilCleaning.map((row, i) => (
+              <StyledTableRow key={i}>
+                <StyledTableCell component="th" scope="row">
+                  {i + 1}
+                </StyledTableCell>
+                <StyledTableCell align="center">{row.user_id}</StyledTableCell>
+                <StyledTableCell align="center">{row.konten}</StyledTableCell>
+                <StyledTableCell align="center">
+                  {row.durasi_konten}
+                </StyledTableCell>
+                <StyledTableCell align="center">
+                  {row.jumlah_akses_konten}
+                </StyledTableCell>
+              </StyledTableRow>
+            ))}
+          </TableBody>
+        </Table>
+      );
     } else {
       return (
         <Table className={classes.table} aria-label="customized table">
-            
-            <TableHead>
-              <TableRow>
-                <StyledTableCell>No</StyledTableCell>
-                <StyledTableCell align="center">
-                  {konten_()}
-                </StyledTableCell>
-                <StyledTableCell align="center">
-                  {jumlahAksesKonten_()}
-                </StyledTableCell>
-                <StyledTableCell align="center">
-                  {korelasi_()}
-                </StyledTableCell>
-              </TableRow>
-            </TableHead>
+          <TableHead>
+            <TableRow>
+              <StyledTableCell>No</StyledTableCell>
+              <StyledTableCell align="center">{konten_()}</StyledTableCell>
+              <StyledTableCell align="center">
+                {jumlahAksesKonten_()}
+              </StyledTableCell>
+              <StyledTableCell align="center">{korelasi_()}</StyledTableCell>
+            </TableRow>
+          </TableHead>
 
-            <TableBody>
-              {dataHasilCleaning.map((row, i) => (
-                <StyledTableRow key={i}>
-                  <StyledTableCell component="th" scope="row">
-                    {i+1}
-                  </StyledTableCell>
-                  <StyledTableCell align="center">{row.konten}</StyledTableCell>
-                  <StyledTableCell align="center">
-                    {row.jumlah_akses_konten}
-                  </StyledTableCell>
-                  <StyledTableCell align="center">
-                    {row.durasi_konten}
-                  </StyledTableCell>
-                </StyledTableRow>
-              ))}
-            </TableBody>
-            
-          </Table>
-      )
+          <TableBody>
+            {dataHasilCleaning.map((row, i) => (
+              <StyledTableRow key={i}>
+                <StyledTableCell component="th" scope="row">
+                  {i + 1}
+                </StyledTableCell>
+                <StyledTableCell align="center">{row.konten}</StyledTableCell>
+                <StyledTableCell align="center">
+                  {row.jumlah_akses_konten}
+                </StyledTableCell>
+                <StyledTableCell align="center">
+                  {row.durasi_konten}
+                </StyledTableCell>
+              </StyledTableRow>
+            ))}
+          </TableBody>
+        </Table>
+      );
     }
-  }
+  };
 
   const sinkronData = () => {
     if (activeStep === 0) {
       return (
-        <div>
-        <Button
-          onClick={() => getUncleanData()}
-          variant="contained"
-          color="primary"
-          size="small"
-          className={classes.button}
-          startIcon={<SyncIcon />}
-        >
-          Sinkron Data
-        </Button>
-      </div>
-      )
+        <center>
+          <div style={{ marginTop: "8px" }}>
+            <Button
+              onClick={() => getUncleanData()}
+              variant="contained"
+              color="primary"
+              size="small"
+              className={classes.button}
+              startIcon={<SyncIcon />}
+            >
+              Sinkron Data
+            </Button>
+          </div>
+        </center>
+      );
     } else {
-      return null
+      return null;
     }
-  }
+  };
+
+  const logout = () => {
+    firebase
+      .auth()
+      .signOut()
+      .then(function () {
+        history.push("/sign-in");
+      })
+      .catch(function (error) {
+        alert(error);
+      });
+  };
 
   return (
     <div>
+      {sinkronData()}
 
-      { sinkronData() }
+      <div style={{ margin: "10px 5px 5px 5px" }}>
+        <Button
+          onClick={() => logout()}
+          variant="contained"
+          color="secondary"
+          size="small"
+          className={classes.button}
+          startIcon={<ExitToApp />}
+        >
+          Logout
+        </Button>
+      </div>
 
       <div
-        style={{ overflowY: "scroll", height: "500px", position: "relative" }}
+        style={{
+          overflowY: "scroll",
+          height: "400px",
+          position: "relative",
+          margin: "32px",
+        }}
       >
-        <TableContainer component={Paper}>
-            {tableCondition_()}
-        </TableContainer>
+        <TableContainer component={Paper}>{tableCondition_()}</TableContainer>
       </div>
 
       <div className={classes.root}>
@@ -472,42 +497,47 @@ export default function CustomizedTables() {
             </Step>
           ))}
         </Stepper>
-        <div>
-          {activeStep === steps.length ? (
-            <div>
-              <Typography className={classes.instructions}>
-                All steps completed - you&apos;re finished
-              </Typography>
-              <Button onClick={handleReset} className={classes.button}>
-                Reset
-              </Button>
-            </div>
-          ) : (
-            <div>
-              <Typography className={classes.instructions}>
-                {getStepContent(activeStep)}
-              </Typography>
+
+        <center>
+          <div>
+            {activeStep === steps.length ? (
               <div>
-                <Button
-                  disabled={activeStep === 0}
-                  onClick={handleBack}
-                  className={classes.button}
-                >
-                  Back
-                </Button>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={handleNext}
-                  className={classes.button}
-                >
-                  {activeStep === steps.length - 1 ? "Finish" : "Next"}
+                <Typography className={classes.instructions}>
+                  All steps completed - you&apos;re finished
+                </Typography>
+                <Button onClick={handleReset} className={classes.button}>
+                  Reset
                 </Button>
               </div>
-            </div>
-          )}
-        </div>
+            ) : (
+              <div>
+                <Typography className={classes.instructions}>
+                  {getStepContent(activeStep)}
+                </Typography>
+                <div>
+                  <Button
+                    disabled={activeStep === 0}
+                    onClick={handleBack}
+                    className={classes.button}
+                  >
+                    Back
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={handleNext}
+                    className={classes.button}
+                  >
+                    {activeStep === steps.length - 1 ? "Finish" : "Next"}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        </center>
       </div>
     </div>
   );
-}
+};
+
+export default withRouter(CustomizedTables);
