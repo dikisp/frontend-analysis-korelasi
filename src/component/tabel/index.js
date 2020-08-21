@@ -23,6 +23,9 @@ import SyncIcon from "@material-ui/icons/Sync";
 import ExitToApp from "@material-ui/icons/ExitToApp";
 import ListAltSharpIcon from "@material-ui/icons/ListAltSharp";
 import TextField from "@material-ui/core/TextField";
+
+import axios from 'axios';
+
   
 // import StepButton from '@material-ui/core/StepButton';
 import { withRouter } from "react-router-dom";
@@ -31,6 +34,7 @@ import firebase from "../../config/firebase";
 
 // form
 // import TextField from './form';
+axios.defaults.baseURL = 'https://azure-ta-deployment.azurewebsites.net/';
 
 const useQontoStepIconStyles = makeStyles({
   root: {
@@ -238,6 +242,7 @@ function getStepContent(step) {
 const CustomizedTables = ({ history }) => {
   const classes = useStyles();
   const [dataHasilCleaning, setdataHasilCleaning] = useState([]);
+  const [buttonProcessData, setbuttonProcessData] = useState({})
 
   useEffect(() => {
     console.log(activeStep);
@@ -264,39 +269,77 @@ const CustomizedTables = ({ history }) => {
     });
   };
 
-  const getUncleanData = () => {
-    const rootref = firebase.database().ref();
-    const userRef = rootref.child("users");
-    var data_tidakbersih = [];
-    userRef.once("value", (snap) => {
-      snap.forEach((row) => {
-        var array_key = Object.keys(row.val().log);
-        array_key.forEach((key) => {
-          data_tidakbersih.push({
-            konten: row.val().log[key].Items_Log,
-            jumlah_akses_konten: row.val().log[key].Items_Interval,
-            durasi_konten: row.val().log[key].Date,
+  const getUncleanData = async () => {
+    try {
+      const uncleanData_ = await axios.get('get-dirty-data');
+      const uncleanData = uncleanData_.data
+      const data_tidakbersih = []
+      var total_content = Object.keys(uncleanData[0]).length
+
+      for(let i=0;i<total_content;i++) {
+        data_tidakbersih.push({
+                  konten: uncleanData[3][i],
+                  jumlah_akses_konten: uncleanData[2][i],
+                  durasi_konten: uncleanData[0][i],
           });
-        });
-      });
+      }
+
       setdataHasilCleaning(data_tidakbersih);
-    });
+    }catch(err) {
+      console.log("Error getUncleanData ", err)
+      alert("Error when try get data");
+    }
+    // const rootref = firebase.database().ref();
+    // const userRef = rootref.child("users");
+    // var data_tidakbersih = [];
+    // userRef.once("value", (snap) => {
+    //   snap.forEach((row) => {
+    //     var array_key = Object.keys(row.val().log);
+    //     array_key.forEach((key) => {
+    //       data_tidakbersih.push({
+    //         konten: row.val().log[key].Items_Log,
+    //         jumlah_akses_konten: row.val().log[key].Items_Interval,
+    //         durasi_konten: row.val().log[key].Date,
+    //       });
+    //     });
+    //   });
+    //   setdataHasilCleaning(data_tidakbersih);
+    // });
   };
 
-  const getkorelasi_ = () => {
-    const rootref = firebase.database().ref();
-    const cleanRef = rootref.child("itemset");
-    var data_bersih = [];
-    cleanRef.once("value", (snap) => {
-      snap.forEach((row) => {
-        data_bersih.push({
-          konten: row.val().itemsets,
-          jumlah_akses_konten: row.val().length,
-          durasi_konten: row.val().support,
-        });
-      });
-      setdataHasilCleaning(data_bersih);
-    });
+  const getkorelasi_ = async (minimumSupport=0.3) => {
+    try {
+      const minimum_supportData_ = await axios.get(`get-itemset/${minimumSupport}`);
+      const minimum_supportData = minimum_supportData_.data
+      console.log("Minimum Support : ", minimum_supportData)
+      const minimum = []
+      const total_content = Object.keys(minimum_supportData['support']).length
+
+      for(let i=0;i<total_content;i++) {
+        minimum.push({
+                  konten: minimum_supportData['itemsets'][i].toString(),
+                  jumlah_akses_konten: minimum_supportData['length'][i],
+                  durasi_konten: minimum_supportData['support'][i],
+        })
+      }
+      setdataHasilCleaning(minimum);
+    }catch(err) {
+      console.log("Error getkorelasi_ as minimum Support ", err)
+      alert("Error when try get data");
+    }
+    // const rootref = firebase.database().ref();
+    // const cleanRef = rootref.child("itemset");
+    // var data_bersih = [];
+    // cleanRef.once("value", (snap) => {
+    //   snap.forEach((row) => {
+    //     data_bersih.push({
+    //       konten: row.val().itemsets,
+    //       jumlah_akses_konten: row.val().length,
+    //       durasi_konten: row.val().support,
+    //     });
+    //   });
+    //   setdataHasilCleaning(data_bersih);
+    // });
   };
 
   const get_ar = () => {
@@ -515,6 +558,12 @@ const CustomizedTables = ({ history }) => {
       id="outlined-textarea"
       label="Minimum Confidence"
       placeholder="Example : 0.3"
+      onChange={e => {
+        setbuttonProcessData({
+          score : e.target.value,
+          label : 'minimum_confidence'
+        })
+      }}
       multiline
       variant="outlined"
     />
@@ -523,6 +572,12 @@ const CustomizedTables = ({ history }) => {
       id="outlined-textarea"
       label="Minimum Support"
       placeholder="Example : 0.7"
+      onChange={e => {
+        setbuttonProcessData({
+          score : e.target.value,
+          label : 'minimum_support'
+        })
+      }}
       multiline
       variant="outlined"
     />
@@ -532,8 +587,18 @@ const CustomizedTables = ({ history }) => {
   const buttonProcess = () => {
     if (activeStep > 1) {
       return (
-        <div style={{marginTop:'16px', height: '32px'}}>
-      <Button variant="contained" color="primary">
+        <div 
+        onClick={() => {
+          if (buttonProcessData.label === 'minimum_support') {
+            getkorelasi_(parseFloat(buttonProcessData.score))
+          } else {
+
+          }
+        }}
+        style={{marginTop:'16px', height: '32px'}}>
+      <Button 
+      variant="contained" 
+      color="primary">
         Proses
       </Button>
       </div>
