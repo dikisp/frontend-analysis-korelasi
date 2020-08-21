@@ -23,7 +23,9 @@ import SyncIcon from "@material-ui/icons/Sync";
 import ExitToApp from "@material-ui/icons/ExitToApp";
 import ListAltSharpIcon from "@material-ui/icons/ListAltSharp";
 import TextField from "@material-ui/core/TextField";
-  
+
+import HeatMap from "./HeatMap";
+
 // import StepButton from '@material-ui/core/StepButton';
 import { withRouter } from "react-router-dom";
 
@@ -310,12 +312,12 @@ const CustomizedTables = ({ history }) => {
           confidence: row.val().confidence,
           consequents: row.val().consequents,
           lift: row.val().lift,
-          support: row.val().support
+          support: row.val().support,
         });
       });
       setdataHasilCleaning(data_bersih);
     });
-  }
+  };
 
   const handleNext = () => {
     setActiveStep((prevActiveStep) => prevActiveStep + 1);
@@ -337,7 +339,7 @@ const CustomizedTables = ({ history }) => {
     } else if (activeStep === 1) {
       getUncleanData();
     } else if (activeStep === 3) {
-      getkorelasi_()
+      getkorelasi_();
     }
   };
 
@@ -371,8 +373,10 @@ const CustomizedTables = ({ history }) => {
   };
 
   const tableCondition_ = () => {
-    console.log("activeStep at function tableCondition_ ", activeStep)
-    if (activeStep === 3 || activeStep ===4) {
+    console.log("activeStep at function tableCondition_ ", activeStep);
+    if (activeStep === 4) {
+      return <HeatMap />;
+    } else if (activeStep === 3) {
       return (
         <Table className={classes.table} aria-label="customized table">
           <TableHead>
@@ -392,22 +396,23 @@ const CustomizedTables = ({ history }) => {
                 <StyledTableCell component="th" scope="row">
                   {i + 1}
                 </StyledTableCell>
-                <StyledTableCell align="center">{row.antecedents}</StyledTableCell>
-                <StyledTableCell align="center">{row.consequents}</StyledTableCell>
                 <StyledTableCell align="center">
-                  {row.support}
+                  {row.antecedents}
                 </StyledTableCell>
-                <StyledTableCell align="center">{row.confidence}</StyledTableCell>
                 <StyledTableCell align="center">
-                  {row.lift}
+                  {row.consequents}
                 </StyledTableCell>
-                
+                <StyledTableCell align="center">{row.support}</StyledTableCell>
+                <StyledTableCell align="center">
+                  {row.confidence}
+                </StyledTableCell>
+                <StyledTableCell align="center">{row.lift}</StyledTableCell>
               </StyledTableRow>
             ))}
           </TableBody>
         </Table>
       );
-    } else if (activeStep === 1) { 
+    } else if (activeStep === 1) {
       return (
         <Table className={classes.table} aria-label="customized table">
           <TableHead>
@@ -511,51 +516,63 @@ const CustomizedTables = ({ history }) => {
 
   const minimumSupport = () => {
     if (activeStep >= 3) {
-      return  <TextField
-      id="outlined-textarea"
-      label="Minimum Confidence"
-      placeholder="Example : 0.3"
-      multiline
-      variant="outlined"
-    />
+      return (
+        <TextField
+          id="outlined-textarea"
+          label="Minimum Confidence"
+          placeholder="Example : 0.3"
+          multiline
+          variant="outlined"
+        />
+      );
     } else if (activeStep === 2) {
-      return <TextField
-      id="outlined-textarea"
-      label="Minimum Support"
-      placeholder="Example : 0.7"
-      multiline
-      variant="outlined"
-    />
+      return (
+        <TextField
+          id="outlined-textarea"
+          label="Minimum Support"
+          placeholder="Example : 0.7"
+          multiline
+          variant="outlined"
+        />
+      );
     }
-  }
+  };
 
   const buttonProcess = () => {
     if (activeStep > 1) {
       return (
-        <div style={{marginTop:'16px', height: '32px'}}>
-      <Button variant="contained" color="primary">
-        Proses
-      </Button>
-      </div>
-      )
+        <div style={{ marginTop: "16px", height: "32px" }}>
+          <Button variant="contained" color="primary">
+            Proses
+          </Button>
+        </div>
+      );
     }
-  }
+  };
 
-  
   return (
     <div>
       {sinkronData()}
 
-      <div style={{margin: "10px 5px 5px 5px" }}>
-      <div style={{ display: "flex", justifyContent:'space-between', marginRight:'16px', marginTop:'16px' }}>
-      <form className={classes.root} noValidate autoComplete="off" style={{marginLeft:'67%'}}>
-        <div>
-          {minimumSupport()}
-       
+      <div style={{ margin: "10px 5px 5px 5px" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            marginRight: "16px",
+            marginTop: "16px",
+          }}
+        >
+          <form
+            className={classes.root}
+            noValidate
+            autoComplete="off"
+            style={{ marginLeft: "67%" }}
+          >
+            <div>{minimumSupport()}</div>
+          </form>
+          {buttonProcess()}
         </div>
-      </form>
-      {buttonProcess()}
-    </div>
 
         <Button
           onClick={() => logout()}
@@ -567,7 +584,6 @@ const CustomizedTables = ({ history }) => {
         >
           Logout
         </Button>
-
       </div>
 
       <div
@@ -626,7 +642,9 @@ const CustomizedTables = ({ history }) => {
                     onClick={handleNext}
                     className={classes.button}
                   >
-                    {activeStep === steps.length - 1 ? "Finish" : "Lanjutkan"}
+                    {activeStep === steps.length - 1
+                      ? "Tampilkan Rekomendasi"
+                      : "Lanjutkan"}
                   </Button>
                 </div>
               </div>
