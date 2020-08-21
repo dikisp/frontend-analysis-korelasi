@@ -32,7 +32,7 @@ import { AuthContext, AuthProvider } from '../auth/Auth';
             <div className="App">
             <nav className="navbar navbar-expand-lg navbar-light fixed-top">
               <div className="container">
-                <Link className="navbar-brand" >Analisis Korelasi Tanah Airku</Link>
+                <Link className="navbar-brand" >Sistem  Association Rule Tanah Airku</Link>
                 <div className="collapse navbar-collapse" id="navbarTogglerDemo02">
                   <ul className="navbar-nav ml-auto">
                     <li className="nav-item">
