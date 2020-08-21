@@ -249,7 +249,7 @@ const CustomizedTables = ({ history }) => {
     getUncleanData();
   }, []);
 
-  const [activeStep, setActiveStep] = React.useState(0);
+  const [activeStep, setActiveStep] = React.useState(4);
   const steps = getSteps();
 
   const handleGetCleanData = () => {
