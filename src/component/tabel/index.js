@@ -23,7 +23,7 @@ import SyncIcon from "@material-ui/icons/Sync";
 import ExitToApp from "@material-ui/icons/ExitToApp";
 import ListAltSharpIcon from "@material-ui/icons/ListAltSharp";
 import TextField from "@material-ui/core/TextField";
-
+import HeatMap from './HeatMap';
 import axios from 'axios';
 
   
@@ -309,6 +309,7 @@ const CustomizedTables = ({ history }) => {
 
   const getkorelasi_ = async (minimumSupport=0.3) => {
     try {
+      localStorage.setItem('support', minimumSupport);
       const minimum_supportData_ = await axios.get(`get-itemset/${minimumSupport}`);
       const minimum_supportData = minimum_supportData_.data
       console.log("Minimum Support : ", minimum_supportData)
@@ -342,23 +343,43 @@ const CustomizedTables = ({ history }) => {
     // });
   };
 
-  const get_ar = () => {
-    const rootref = firebase.database().ref();
-    const cleanRef = rootref.child("ar");
-    var data_bersih = [];
-    cleanRef.once("value", (snap) => {
-      snap.forEach((row) => {
-        data_bersih.push({
-          antecedents: row.val().antecedents,
-          confidence: row.val().confidence,
-          consequents: row.val().consequents,
-          lift: row.val().lift,
-          support: row.val().support
-        });
-      });
-      setdataHasilCleaning(data_bersih);
-    });
-  }
+  const get_ar = async (confidence=0.5) => {
+    try {
+      localStorage.setItem('confidence', confidence);
+      const dataConfidence_ = await axios.get(`get-rules/${localStorage.getItem('support')}/${confidence}`)
+      const dataConfidence = dataConfidence_.data
+      const total_content = Object.keys(dataConfidence['antecedents']).length
+      var confindence = []
+      for(let i=0;i<total_content;i++) {
+        confindence.push({
+          antecedents: dataConfidence['antecedents'][i].toString(),
+          confidence: dataConfidence['confidence'][i],
+          consequents: dataConfidence['consequents'][i].toString(),
+          lift: dataConfidence['lift'][i],
+          support: dataConfidence['support'][i],
+        })
+      }
+      setdataHasilCleaning(confindence);
+    }catch(err) {
+      alert("Erro Getting Data ");
+      console.log("Erro getting Data : ", err)
+    }
+    // const rootref = firebase.database().ref();
+    // const cleanRef = rootref.child("ar");
+    // var data_bersih = [];
+    // cleanRef.once("value", (snap) => {
+    //   snap.forEach((row) => {
+    //     data_bersih.push({
+    //       antecedents: row.val().antecedents,
+    //       confidence: row.val().confidence,
+    //       consequents: row.val().consequents,
+    //       lift: row.val().lift,
+    //       support: row.val().support,
+    //     });
+    //   });
+    //   setdataHasilCleaning(data_bersih);
+    // });
+  };
 
   const handleNext = () => {
     setActiveStep((prevActiveStep) => prevActiveStep + 1);
@@ -380,7 +401,7 @@ const CustomizedTables = ({ history }) => {
     } else if (activeStep === 1) {
       getUncleanData();
     } else if (activeStep === 3) {
-      getkorelasi_()
+      getkorelasi_();
     }
   };
 
@@ -414,8 +435,10 @@ const CustomizedTables = ({ history }) => {
   };
 
   const tableCondition_ = () => {
-    console.log("activeStep at function tableCondition_ ", activeStep)
-    if (activeStep === 3 || activeStep ===4) {
+    console.log("activeStep at function tableCondition_ ", activeStep);
+    if (activeStep === 4) {
+      return <HeatMap />;
+    } else if (activeStep === 3) {
       return (
         <Table className={classes.table} aria-label="customized table">
           <TableHead>
@@ -435,22 +458,23 @@ const CustomizedTables = ({ history }) => {
                 <StyledTableCell component="th" scope="row">
                   {i + 1}
                 </StyledTableCell>
-                <StyledTableCell align="center">{row.antecedents}</StyledTableCell>
-                <StyledTableCell align="center">{row.consequents}</StyledTableCell>
                 <StyledTableCell align="center">
-                  {row.support}
+                  {row.antecedents}
                 </StyledTableCell>
-                <StyledTableCell align="center">{row.confidence}</StyledTableCell>
                 <StyledTableCell align="center">
-                  {row.lift}
+                  {row.consequents}
                 </StyledTableCell>
-                
+                <StyledTableCell align="center">{row.support}</StyledTableCell>
+                <StyledTableCell align="center">
+                  {row.confidence}
+                </StyledTableCell>
+                <StyledTableCell align="center">{row.lift}</StyledTableCell>
               </StyledTableRow>
             ))}
           </TableBody>
         </Table>
       );
-    } else if (activeStep === 1) { 
+    } else if (activeStep === 1) {
       return (
         <Table className={classes.table} aria-label="customized table">
           <TableHead>
@@ -582,7 +606,7 @@ const CustomizedTables = ({ history }) => {
       variant="outlined"
     />
     }
-  }
+  };
 
   const buttonProcess = () => {
     if (activeStep > 1) {
@@ -592,7 +616,7 @@ const CustomizedTables = ({ history }) => {
           if (buttonProcessData.label === 'minimum_support') {
             getkorelasi_(parseFloat(buttonProcessData.score))
           } else {
-
+            get_ar(parseFloat(buttonProcessData.score))
           }
         }}
         style={{marginTop:'16px', height: '32px'}}>
@@ -604,23 +628,31 @@ const CustomizedTables = ({ history }) => {
       </div>
       )
     }
-  }
+  };
 
-  
   return (
     <div>
       {sinkronData()}
 
-      <div style={{margin: "10px 5px 5px 5px" }}>
-      <div style={{ display: "flex", justifyContent:'space-between', marginRight:'16px', marginTop:'16px' }}>
-      <form className={classes.root} noValidate autoComplete="off" style={{marginLeft:'67%'}}>
-        <div>
-          {minimumSupport()}
-       
+      <div style={{ margin: "10px 5px 5px 5px" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            marginRight: "16px",
+            marginTop: "16px",
+          }}
+        >
+          <form
+            className={classes.root}
+            noValidate
+            autoComplete="off"
+            style={{ marginLeft: "67%" }}
+          >
+            <div>{minimumSupport()}</div>
+          </form>
+          {buttonProcess()}
         </div>
-      </form>
-      {buttonProcess()}
-    </div>
 
         <Button
           onClick={() => logout()}
@@ -632,7 +664,6 @@ const CustomizedTables = ({ history }) => {
         >
           Logout
         </Button>
-
       </div>
 
       <div
@@ -691,7 +722,9 @@ const CustomizedTables = ({ history }) => {
                     onClick={handleNext}
                     className={classes.button}
                   >
-                    {activeStep === steps.length - 1 ? "Finish" : "Lanjutkan"}
+                    {activeStep === steps.length - 1
+                      ? "Tampilkan Rekomendasi"
+                      : "Lanjutkan"}
                   </Button>
                 </div>
               </div>
