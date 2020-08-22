@@ -10,7 +10,7 @@ import Paper from "@material-ui/core/Paper";
 import { Stop } from "@material-ui/icons";
 import axios from 'axios';
 
-axios.defaults.baseURL = 'https://azure-ta-deployment.azurewebsites.net/';
+axios.defaults.baseURL = 'https://cors-anywhere.herokuapp.com/https://azure-ta-deployment.azurewebsites.net/';
 const useStyles = makeStyles({
   table: {
     minWidth: 650,
@@ -46,8 +46,10 @@ export default function HeatMap() {
 
 
   const getResult = async () => {
+    const minimumSupport = localStorage.getItem('support') ? localStorage.getItem('support') : 0.3;
+    const minimumConfidence = localStorage.getItem('confidence') ? localStorage.getItem('confidence') : 0.5;
     try {
-      const sort = await axios.get(`get-frequency/${localStorage.getItem('support')}/${localStorage.getItem('confidence')}`);
+      const sort = await axios.get(`get-frequency/${minimumSupport}/${minimumConfidence}`);
       const sort_data = sort.data
       var newData = [];
       const array_konten = Object.keys(sort.data);
@@ -58,7 +60,7 @@ export default function HeatMap() {
         })
       }
       
-      const result_rekomen = await axios.get(`get-not-accessed/${localStorage.getItem('support')}/${localStorage.getItem('confidence')}`);
+      const result_rekomen = await axios.get(`get-not-accessed/${minimumSupport}/${minimumConfidence}`);
       const rekomendasi = result_rekomen.data;
       const total_rekomendasi = Object.keys(rekomendasi.makanan).length
       var dataResult = {

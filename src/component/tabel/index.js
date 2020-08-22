@@ -34,7 +34,7 @@ import firebase from "../../config/firebase";
 
 // form
 // import TextField from './form';
-axios.defaults.baseURL = 'https://azure-ta-deployment.azurewebsites.net/';
+axios.defaults.baseURL = 'https://cors-anywhere.herokuapp.com/https://azure-ta-deployment.azurewebsites.net/';
 
 const useQontoStepIconStyles = makeStyles({
   root: {
@@ -346,7 +346,8 @@ const CustomizedTables = ({ history }) => {
   const get_ar = async (confidence=0.5) => {
     try {
       localStorage.setItem('confidence', confidence);
-      const dataConfidence_ = await axios.get(`get-rules/${localStorage.getItem('support')}/${confidence}`)
+      const minimumSupport = localStorage.getItem('support') ? localStorage.getItem('support') : 0.3;
+      const dataConfidence_ = await axios.get(`get-rules/${minimumSupport}/${confidence}`)
       const dataConfidence = dataConfidence_.data
       const total_content = Object.keys(dataConfidence['antecedents']).length
       var confindence = []
